@@ -1,6 +1,7 @@
 #include <thread>
 #include <chrono>
 #include <iostream>
+#include <string>
 
 class FrameLimiter
 {
@@ -10,12 +11,14 @@ private:
 
 	unsigned int frameRate = 0;
 	double nextFrameRate = 1.0;
+	bool output = false;
 
-	double desiredFrameRate = 0;
+	double desiredFrameRate = 0.0;
 
 public:
-	FrameLimiter(double _frameRate = 60.0)
+	FrameLimiter(double _frameRate = 60.0, bool output = false)
 	{
+		this->output = output; 
 		this->desiredFrameRate = _frameRate;
 		timePerFrame = std::chrono::duration<double>(1.0 / desiredFrameRate);
 	}
@@ -25,16 +28,19 @@ public:
 		auto timePassedInSeconds = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - last).count() * 1.0e-9;
 		last = std::chrono::high_resolution_clock::now();
 
-		if (nextFrameRate <= 0)
+		if (this->output)
 		{
-			nextFrameRate = 1.0;
-			std::cout << "Framerate: " << std::to_string(this->frameRate);
-			frameRate = 0;
-		}
-		else
-		{
-			nextFrameRate -= timePassedInSeconds;
-			frameRate++;
+			if (nextFrameRate <= 0)
+			{
+				nextFrameRate = 1.0;
+				std::cout << "Framerate: " << std::to_string(this->frameRate);
+				frameRate = 0;
+			}
+			else
+			{
+				nextFrameRate -= timePassedInSeconds;
+				frameRate++;
+			}
 		}
 
 		return timePassedInSeconds;
